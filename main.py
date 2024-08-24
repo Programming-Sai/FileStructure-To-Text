@@ -15,39 +15,49 @@ def file_to_text(folder, depth=0, prefix=""):
         None
     """
 
+    # Verify folder for if it is a file or folder first
+    if os.path.isfile(folder) or os.path.isdir(folder):
+        if depth == 0 and os.path.isfile(folder):
+            print("\n", os.path.basename(folder), " \n\n Sorry you have Entered a File\n")
+            return
 
-    # Print the base directory if at the root level
-    print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
+        try:
+            # Print the base directory if at the root level
+            print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
 
-    # Get list of all items in the folder
-    items = os.listdir(folder)
-    dirs = [i for i in items if os.path.isdir(os.path.join(folder, i))]
-    files = [i for i in items if not os.path.isdir(os.path.join(folder, i))]
+            # Get list of all items in the folder
+            items = os.listdir(folder)
+            dirs = [i for i in items if os.path.isdir(os.path.join(folder, i))]
+            files = [i for i in items if not os.path.isdir(os.path.join(folder, i))]
 
-    # Process directories
-    for i, d in enumerate(dirs):
-        # Determine if this is the last directory in the list and if there are no files
-        is_last_dir = (i == len(dirs) - 1) and not files
-        # Set the appropriate connector symbol
-        connector = "\t└─" if is_last_dir else "\t├─"
-        # Print the directory with the appropriate prefix
-        print(prefix + connector + " " + d + '/*')
-        # Update the prefix for nested items
-        new_prefix = prefix + ("    " if is_last_dir else "\t|   ")
-        # Recursively call the function for the subdirectory
-        file_to_text(os.path.join(folder, d), depth + 1, new_prefix)
-    
-    # Process files
-    for i, f in enumerate(files):
-        # Determine if this is the last file in the list
-        is_last_file = (i == len(files) - 1)
-        # Set the appropriate connector symbol
-        connector = "\t└─" if is_last_file else "\t├─"
-        # Print the file with the appropriate prefix
-        print(prefix + connector + " " + f)
+            # Process directories
+            for i, d in enumerate(dirs):
+                # Determine if this is the last directory in the list and if there are no files
+                is_last_dir = (i == len(dirs) - 1) and not files
+                # Set the appropriate connector symbol
+                connector = "\t└─" if is_last_dir else "\t├─"
+                # Print the directory with the appropriate prefix
+                print(prefix + connector + " " + d + '/*')
+                # Update the prefix for nested items
+                new_prefix = prefix + ("    " if is_last_dir else "\t|   ")
+                # Recursively call the function for the subdirectory
+                file_to_text(os.path.join(folder, d), depth + 1, new_prefix)
+            
+            # Process files
+            for i, f in enumerate(files):
+                # Determine if this is the last file in the list
+                is_last_file = (i == len(files) - 1)
+                # Set the appropriate connector symbol
+                connector = "\t└─" if is_last_file else "\t├─"
+                # Print the file with the appropriate prefix
+                print(prefix + connector + " " + f)
 
-    # Add a newline after printing the root directory structure
-    print("\n\n") if depth == 0 else ""
+            # Add a newline after printing the root directory structure
+            print("\n\n") if depth == 0 else ""
+        except Exception as e:
+            print("\nSorry you have entered a wrong file path or the path doesnt exist. Re-run to try again.\n")
+    else:
+        print("\nSorry you have entered a wrong file path or the path doesnt exist. Re-run to try again.\n")
 
 
 
@@ -56,8 +66,17 @@ def file_to_text(folder, depth=0, prefix=""):
 
 
 # Start the process by taking a folder path as input from the user
-file_to_text(input("\n\nEnter File Path: "))
+
+def main():
+    choice = input("\n\nWould You Like to see a Demo (Y/n) \n")
+    if choice.lower() == "y":
+        file_to_text(os.path.join(os.getcwd()))
+    elif choice.lower() == 'n':
+        file_to_text(input("\n\nEnter Absolute File Path: "))
+    else:
+        print("\nSorry Invalid Choice. Re-run to try again.\n")
 
 
 
 
+main()
