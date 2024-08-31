@@ -109,7 +109,7 @@ you should see something like this
 - You can then use the command like so:
 
 ```bash 
-ftt <Folder-name>
+ftt <folder-name>
 ```
 
 
