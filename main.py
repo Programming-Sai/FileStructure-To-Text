@@ -11,7 +11,8 @@ def install():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     if platform.system() == "Windows":
         # Execute the Windows setup script
-        subprocess.call([os.path.join(script_dir, "setup.bat")], shell=True)
+        bat_file = os.path.join(script_dir, "setup.bat")
+        subprocess.call(['powershell', '-Command', f'Start-Process "{bat_file}" -Verb RunAs'])    
     else:
         # Execute the Unix-like setup script
         subprocess.call(["bash", os.path.join(script_dir, "setup.sh")])
