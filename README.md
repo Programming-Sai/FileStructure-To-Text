@@ -72,12 +72,8 @@ bash
 
     python3 main.py
     ```
-4. **Input Folder Path:**
 
-- When prompted, enter the absolute path of the folder whose structure you want to visualize.
-
-
-5. **Installation:**
+4. **Installation:**
 -  Run the following command after cloning and navigating into the project directory in order to install the script:
 
 ``` bash
@@ -109,11 +105,11 @@ you should see something like this
 - You can then use the command like so:
 
 ```bash 
-ftt <Folder-name>
+ftt <folder-name>
 ```
 
 
-6. **Uninstallation (Optional):**
+5. **Uninstallation (Optional):**
 -  Run the following command after installtion in order to uninstall the command:
 
 ``` bash
