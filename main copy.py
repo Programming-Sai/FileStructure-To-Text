@@ -1,34 +1,9 @@
 import fnmatch
 import os
+import re
 import subprocess
 import platform
 import argparse
-
-def install():
-    """
-    Install the FTT command by copying the main Python script to a standard location
-    and creating an executable script for running the command.
-    """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    if platform.system() == "Windows":
-        # Execute the Windows setup script
-        bat_file = os.path.join(script_dir, "setup.bat")
-        subprocess.call(['powershell', '-Command', f'Start-Process "{bat_file}" -Verb RunAs'])    
-    else:
-        # Execute the Unix-like setup script
-        subprocess.call(["bash", os.path.join(script_dir, "setup.sh")])
-
-def uninstall():
-    """
-    Uninstall the FTT command by removing the installed files and cleaning up.
-    """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    if platform.system() == "Windows":
-        # Execute the Windows uninstall script
-        subprocess.call([os.path.join(script_dir, "uninstall.bat")], shell=True)
-    else:
-        # Execute the Unix-like uninstall script
-        subprocess.call(["bash", os.path.join(script_dir, "uninstall.sh")])
 
 def visualize(folder):
     """
@@ -110,6 +85,23 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
 
 
 
+def parser(structure, root, result=[], folders=[]):
+    lines = structure.strip().split("\n")    
+    for i, line in enumerate(lines):
+
+        line=re.sub(r"\s+", "", line)
+        
+        if line.endswith("/*"):
+            folders.append(line.replace("/*", '').replace("./", '').replace("├─", '').replace("|", '').replace("\t", ''))
+        elif "└─" in line:
+            result.append(os.path.join(root, *folders[1:], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
+            folders.pop()
+        else:
+            result.append(os.path.join(root, *folders[1:], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
+    return result
+
+
+
 
 def main():
     """
@@ -124,12 +116,7 @@ def main():
     parser = argparse.ArgumentParser(description='Manage the FTT command.')
     parser.add_argument('command', type=str, nargs='?', help='Command to execute (install, uninstall, or <folder_name>)')
     args = parser.parse_args()
-
-    if args.command == 'install':
-        install()
-    elif args.command == 'uninstall':
-        uninstall()
-    elif args.command is None:
+    if args.command is None:
         visualize(os.getcwd())
     else:
         visualize(args.command)
@@ -156,12 +143,33 @@ if __name__ == "__main__":
         "*/dir 1 - Copy/*",
     ]
 
+    structure = '''
+./project/*  
+    ├─ src/*  
+    |   ├─ main.py  
+    |   ├─ utils.js  
+    |   ├─ config.json  
+    |   └─  README.md  
+    ├─ assets/*  
+    |   ├─ image.png  
+    |   ├─ empty/*  
+    |   |   └─ max.mp3
+    |   └─ audio.mp3
+    ├─ main.py  
+    ├─ LICENSE.txt  
+    └─  script.sh  
+'''
+
 
     folder = r"C:\Users\pc\Desktop\j"
+    # folder = r"/Users/pc/Desktop/j"
+    # print(parser(structure, folder))
+    # for i in parser(structure, folder):
+        # print(i)
     # file_to_text(folder)
-    file_to_text(folder, exemptions=exemptions1)
-    file_to_text(folder, exemptions=exemptions2)
-    file_to_text(folder, exemptions=exemptions3)
-    file_to_text(folder, exemptions=exemptions4)
-    file_to_text(folder, exemptions=exemptions5)
+    # file_to_text(folder, exemptions=exemptions1)
+    # file_to_text(folder, exemptions=exemptions2)
+    # file_to_text(folder, exemptions=exemptions3)
+    # file_to_text(folder, exemptions=exemptions4)
+    # file_to_text(folder, exemptions=exemptions5)
 
