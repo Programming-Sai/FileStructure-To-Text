@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import subprocess
 import platform
@@ -66,17 +67,10 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
     print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
 
     # Get list of all items in the folder
-    # print(exemptions)
-    # exemptions = [os.path.basename(j) for j in exemptions]
     exemptions = {os.path.abspath(j) for j in exemptions}  # Use a set for faster lookups
     exempt_names = {os.path.basename(j) for j in exemptions}
 
-    # print(exemptions)
-
     items = os.listdir(folder) 
-    # dirs = [os.path.join(folder, i) for i in items if os.path.isdir(os.path.join(folder, i))]
-    # files = [os.path.join(folder, i) for i in items if not os.path.isdir(os.path.join(folder, i))]
-
 
     dirs = [
         os.path.join(folder, i)
@@ -84,6 +78,8 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
         if os.path.isdir(os.path.join(folder, i)) 
         and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
         and i not in exempt_names  # Check relative name
+        and not any(fnmatch.fnmatch(os.path.abspath(os.path.join(folder, i)), pattern) for pattern in exemptions)
+
     ]
 
     files = [
@@ -91,17 +87,10 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
         for i in items
         if not os.path.isdir(os.path.join(folder, i))
         and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
-        and i not in exempt_names  # Check relative name
+        and i not in exempt_names  
+        and not any(fnmatch.fnmatch(os.path.abspath(os.path.join(folder, i)), pattern) for pattern in exemptions)
     ]
 
-
-    # print(dirs, files)
-
-
-
-    # dirs = [i for i in items if os.path.isdir(os.path.join(folder, i)) if (i not in exemptions)]
-    # files = [i for i in items if not os.path.isdir(os.path.join(folder, i)) if (i not in exemptions)]
-    
     for i, d in enumerate(dirs):
         # Determine if this is the last directory in the list and if there are no files
         is_last_dir = (i == len(dirs) - 1) and not files        
@@ -165,10 +154,13 @@ if __name__ == "__main__":
         "file 1 - Copy - Copy.txt"  # Exclude this file from the root
     ]
     exemptions4=[]
-
+    exemptions5 = [
+        "*.log",
+        "*.txt"    
+    ]
 
 
     folder = r"C:\Users\pc\Desktop\j"
     # file_to_text(folder)
-    file_to_text(folder, exemptions=exemptions4)
+    file_to_text(folder, exemptions=exemptions5)
 
