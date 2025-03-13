@@ -156,7 +156,8 @@ if __name__ == "__main__":
     exemptions4=[]
     exemptions5 = [
         "*.log",
-        "*.txt"    
+        "*.txt",
+        "*/dir 1 - Copy/*",
     ]
 
 
