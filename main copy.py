@@ -85,7 +85,9 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
 
 
 
-def parser(structure, root, result=[], folders=[]):
+def parser(structure, root):
+    result=[] 
+    folders=[]
     lines = structure.strip().split("\n")    
     for i, line in enumerate(lines):
 
@@ -94,13 +96,22 @@ def parser(structure, root, result=[], folders=[]):
         if line.endswith("/*"):
             folders.append(line.replace("/*", '').replace("./", '').replace("├─", '').replace("|", '').replace("\t", ''))
         elif "└─" in line:
-            result.append(os.path.join(root, *folders[1:], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
+            result.append(os.path.join(root, *folders[(1 if os.path.basename(root) == folders[0] else 0):], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
             folders.pop()
         else:
-            result.append(os.path.join(root, *folders[1:], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
+            result.append(os.path.join(root, *folders[(1 if os.path.basename(root) == folders[0] else 0):], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
     return result
 
 
+
+def create_dir(paths):
+    for path in paths:
+        dir = os.path.dirname(path)
+        if dir and not os.path.exists(dir):
+            os.makedirs(dir)
+
+        with open(path, 'w') as f:
+            pass
 
 
 def main():
@@ -143,29 +154,35 @@ if __name__ == "__main__":
         "*/dir 1 - Copy/*",
     ]
 
-    structure = '''
-./project/*  
-    ├─ src/*  
-    |   ├─ main.py  
-    |   ├─ utils.js  
-    |   ├─ config.json  
-    |   └─  README.md  
-    ├─ assets/*  
-    |   ├─ image.png  
-    |   ├─ empty/*  
-    |   |   └─ max.mp3
-    |   └─ audio.mp3
-    ├─ main.py  
-    ├─ LICENSE.txt  
-    └─  script.sh  
-'''
+#     structure = '''
+# ./project/*  
+#     ├─ src/*  
+#     |   ├─ main.py  
+#     |   ├─ utils.js  
+#     |   ├─ config.json  
+#     |   └─  README.md  
+#     ├─ assets/*  
+#     |   ├─ image.png  
+#     |   ├─ empty/*  
+#     |   |   └─ max.mp3
+#     |   ├─ empt2y/*  
+#     |   |   └─ .keep
+#     |   └─ audio.mp3
+#     ├─ main.py  
+#     ├─ LICENSE.txt  
+#     └─  script.sh  
+# '''
+    with open('template.txt', 'r', encoding='utf-8') as f:
+        structure = f.read()
 
 
-    folder = r"C:\Users\pc\Desktop\j"
+    folder = r"C:\Users\pc\Desktop\j\springboot-project"
     # folder = r"/Users/pc/Desktop/j"
-    # print(parser(structure, folder))
-    # for i in parser(structure, folder):
-        # print(i)
+    paths = parser(structure, folder)
+    # print(paths)
+    for i in paths:
+        print(i)
+    create_dir(paths)
     # file_to_text(folder)
     # file_to_text(folder, exemptions=exemptions1)
     # file_to_text(folder, exemptions=exemptions2)

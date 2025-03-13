@@ -1,0 +1,16 @@
+springboot-project/*  
+    ├─ src/*  
+    |   ├─ DemoApplication.java  
+    |   ├─ config.json  
+    |   ├─ utils.json  
+    |   └─ README.md  
+    ├─ assets/*  
+    |   ├─ logo.png  
+    |   ├─ migrations/*  
+    |   |   └─ V1__init.sql  
+    |   ├─ docs/*  
+    |   |   └─ api.md  
+    |   └─ audio.mp3  
+    ├─ pom.xml  
+    ├─ LICENSE.txt  
+    └─ Dockerfile  
