@@ -50,6 +50,8 @@ def visualize(folder):
     except Exception as e:
         print(f"\nSorry an error has occurred. Please Try Again:\nError: \t\n {e}\n")
 
+
+
 def file_to_text(folder, depth=0, prefix="", exemptions=[]):
     """
     Recursively traverse a directory and print its structure in a tree-like format.
@@ -58,62 +60,55 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
     folder (str): The path to the folder to be traversed.
     depth (int): The current depth in the directory tree (used for formatting). Defaults to 0.
     prefix (str): The prefix string used to format the tree structure. Defaults to an empty string.
-    exemptions (list): List of paths or filenames to exclude.
+    exemptions (list): List of paths or filenames to exclude, supports wildcards.
 
     Returns:
     None
     """
-    # Print the base directory if at the root level
     print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
 
-    # Get list of all items in the folder
-    exemptions = {os.path.abspath(j) for j in exemptions}  # Use a set for faster lookups
-    exempt_names = {os.path.basename(j) for j in exemptions}
+    items = os.listdir(folder)
 
-    items = os.listdir(folder) 
+    # Convert absolute paths for direct matching
+    exemptions_abs = {os.path.abspath(j) for j in exemptions}
+    exemptions_names = {os.path.basename(j) for j in exemptions}
 
-    dirs = [
-        os.path.join(folder, i)
-        for i in items
-        if os.path.isdir(os.path.join(folder, i)) 
-        and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
-        and i not in exempt_names  # Check relative name
-        and not any(fnmatch.fnmatch(os.path.abspath(os.path.join(folder, i)), pattern) for pattern in exemptions)
+    def is_exempted(path):
+        abs_path = os.path.abspath(path)
+        base_name = os.path.basename(path)
 
-    ]
+        # Check direct absolute and name matches
+        if abs_path in exemptions_abs or base_name in exemptions_names:
+            return True
 
-    files = [
-        os.path.join(folder, i)
-        for i in items
-        if not os.path.isdir(os.path.join(folder, i))
-        and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
-        and i not in exempt_names  
-        and not any(fnmatch.fnmatch(os.path.abspath(os.path.join(folder, i)), pattern) for pattern in exemptions)
-    ]
+        # Check wildcard patterns using fnmatch
+        for pattern in exemptions:
+            if fnmatch.fnmatch(base_name, pattern) or fnmatch.fnmatch(abs_path, pattern):
+                return True
 
+        return False
+
+    # Filter directories and files
+    dirs = [os.path.join(folder, i) for i in items if os.path.isdir(os.path.join(folder, i)) and not is_exempted(os.path.join(folder, i))]
+    files = [os.path.join(folder, i) for i in items if not os.path.isdir(os.path.join(folder, i)) and not is_exempted(os.path.join(folder, i))]
+
+    # Print directories
     for i, d in enumerate(dirs):
-        # Determine if this is the last directory in the list and if there are no files
-        is_last_dir = (i == len(dirs) - 1) and not files        
-        # Set the appropriate connector symbol
+        is_last_dir = (i == len(dirs) - 1) and not files
         connector = "\t└─" if is_last_dir else "\t├─"
-        # Print the directory with the appropriate prefix
         print(prefix + connector + " " + os.path.basename(d) + '/*')
-        # Update the prefix for nested items
         new_prefix = prefix + ("    " if is_last_dir else "\t|   ")
-        # Recursively call the function for the subdirectory
         file_to_text(os.path.join(folder, os.path.basename(d)), depth + 1, new_prefix, exemptions)
-    
-    # Process files
+
+    # Print files
     for i, f in enumerate(files):
-        # Determine if this is the last file in the list
         is_last_file = (i == len(files) - 1)
-        # Set the appropriate connector symbol
         connector = "\t└─" if is_last_file else "\t├─"
-        # Print the file with the appropriate prefix
         print(prefix + connector + " " + os.path.basename(f))
 
-    # Add a newline after printing the root directory structure
     print("\n\n") if depth == 0 else ""
+
+
 
 def main():
     """
@@ -163,5 +158,9 @@ if __name__ == "__main__":
 
     folder = r"C:\Users\pc\Desktop\j"
     # file_to_text(folder)
+    file_to_text(folder, exemptions=exemptions1)
+    file_to_text(folder, exemptions=exemptions2)
+    file_to_text(folder, exemptions=exemptions3)
+    file_to_text(folder, exemptions=exemptions4)
     file_to_text(folder, exemptions=exemptions5)
 
