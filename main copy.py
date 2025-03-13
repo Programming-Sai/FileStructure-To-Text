@@ -57,31 +57,62 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
     folder (str): The path to the folder to be traversed.
     depth (int): The current depth in the directory tree (used for formatting). Defaults to 0.
     prefix (str): The prefix string used to format the tree structure. Defaults to an empty string.
+    exemptions (list): List of paths or filenames to exclude.
 
     Returns:
     None
     """
     # Print the base directory if at the root level
-    print(depth)
     print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
 
     # Get list of all items in the folder
-    items = os.listdir(folder) #TODO Find an alternative that gets or returns the full path of the dir content, so that we CAN compare with the exemptiuons.
-    dirs = [i for i in items if os.path.isdir(os.path.join(folder, i)) and i not in exemptions]
-    files = [i for i in items if not os.path.isdir(os.path.join(folder, i)) and i not in exemptions]
+    # print(exemptions)
+    # exemptions = [os.path.basename(j) for j in exemptions]
+    exemptions = {os.path.abspath(j) for j in exemptions}  # Use a set for faster lookups
+    exempt_names = {os.path.basename(j) for j in exemptions}
 
-    # Process directories
+    # print(exemptions)
+
+    items = os.listdir(folder) 
+    # dirs = [os.path.join(folder, i) for i in items if os.path.isdir(os.path.join(folder, i))]
+    # files = [os.path.join(folder, i) for i in items if not os.path.isdir(os.path.join(folder, i))]
+
+
+    dirs = [
+        os.path.join(folder, i)
+        for i in items
+        if os.path.isdir(os.path.join(folder, i)) 
+        and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
+        and i not in exempt_names  # Check relative name
+    ]
+
+    files = [
+        os.path.join(folder, i)
+        for i in items
+        if not os.path.isdir(os.path.join(folder, i))
+        and os.path.abspath(os.path.join(folder, i)) not in exemptions  # Check absolute path
+        and i not in exempt_names  # Check relative name
+    ]
+
+
+    # print(dirs, files)
+
+
+
+    # dirs = [i for i in items if os.path.isdir(os.path.join(folder, i)) if (i not in exemptions)]
+    # files = [i for i in items if not os.path.isdir(os.path.join(folder, i)) if (i not in exemptions)]
+    
     for i, d in enumerate(dirs):
         # Determine if this is the last directory in the list and if there are no files
         is_last_dir = (i == len(dirs) - 1) and not files        
         # Set the appropriate connector symbol
         connector = "\t└─" if is_last_dir else "\t├─"
         # Print the directory with the appropriate prefix
-        print(prefix + connector + " " + d + '/*')
+        print(prefix + connector + " " + os.path.basename(d) + '/*')
         # Update the prefix for nested items
         new_prefix = prefix + ("    " if is_last_dir else "\t|   ")
         # Recursively call the function for the subdirectory
-        file_to_text(os.path.join(folder, d), depth + 1, new_prefix, exemptions)
+        file_to_text(os.path.join(folder, os.path.basename(d)), depth + 1, new_prefix, exemptions)
     
     # Process files
     for i, f in enumerate(files):
@@ -90,7 +121,7 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
         # Set the appropriate connector symbol
         connector = "\t└─" if is_last_file else "\t├─"
         # Print the file with the appropriate prefix
-        print(prefix + connector + " " + f)
+        print(prefix + connector + " " + os.path.basename(f))
 
     # Add a newline after printing the root directory structure
     print("\n\n") if depth == 0 else ""
@@ -119,10 +150,25 @@ def main():
         visualize(args.command)
 
 if __name__ == "__main__":
-    exemptions = [r"\dir 1\file 1 - Copy (3).txt", ]
-    # main()
-    file_to_text(r"C:\Users\pc\Desktop\j", exemptions=exemptions)
-    # file_to_text(r"C:\Users\pc\Desktop\j")
-    # file_to_text(r"C:\Users\pc\Desktop\j", exemptions=[r"dir 1", "file 1.txt", "file 1 - Copy (3).txt"])
-    # file = r"C:\Users\pc\Desktop\j"
-    # print(file)
+    exemptions1 = [
+        r"C:\Users\pc\Desktop\j\dir 1",  # Exclude entire "dir 1"
+        r"C:\Users\pc\Desktop\j\dir 2\dir 1 - Copy\file 1 - Copy (2).txt",  # Exclude specific file
+        r"C:\Users\pc\Desktop\j\file 1 - Copy.txt"  # Exclude a single file in root
+    ]
+    exemptions2 = [
+        r"C:\Users\pc\Desktop\j\dir 2",  # Exclude "dir 2" only from the root
+        "file 1.txt",  # Exclude "file 1.txt" no matter where it appears
+    ]
+    exemptions3 = [
+        "dir 1",  # Exclude "dir 1" inside "j"
+        "dir 2/dir 1 - Copy/file 1 - Copy (2).txt",  # Exclude this exact relative file
+        "file 1 - Copy - Copy.txt"  # Exclude this file from the root
+    ]
+    exemptions4=[]
+
+
+
+    folder = r"C:\Users\pc\Desktop\j"
+    # file_to_text(folder)
+    file_to_text(folder, exemptions=exemptions4)
+
