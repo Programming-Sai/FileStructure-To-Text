@@ -110,6 +110,7 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[]):
 
 
 
+
 def main():
     """
     Main function to parse command-line arguments and execute the appropriate action.
