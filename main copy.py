@@ -4,6 +4,7 @@ import re
 import subprocess
 import platform
 import argparse
+import sys
 from version import version
 
 
@@ -23,15 +24,14 @@ def file_to_text_validator(folder):
     
     if not os.path.isabs(folder):
         print("Error: Please enter a valid absolute path.")
-        return False
+        sys.exit(1)
     
     if not os.path.isdir(folder):
         print(f"Error: Folder '{folder}' not found.")
-        return False
+        sys.exit(1)
 
-    try:
-        with open(folder, 'r') as f:
-            pass
+    try:    
+        pass
         return True
     except FileNotFoundError:
         print(f"\nError: Folder '{folder}' not found. If it exists, try:\n"
@@ -39,8 +39,8 @@ def file_to_text_validator(folder):
               f"- Running `ftt {folder}` from your current location\n")
     except Exception as e:
         print(f"\nAn unexpected error occurred:\n{e}\n")
-    
-    return False
+
+    sys.exit(1)
 
 
 def exemptions_validator(exemptions):
@@ -87,6 +87,7 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[], exclude_hidden=False
         output = []
     if max_depth is not None and depth >= max_depth: return
     print("\n\n./" + os.path.basename(folder) + '/*') if depth == 0 else ""
+    output.append("\n\n./" + os.path.basename(folder) + '/*'+'\n') if depth == 0 else ""
 
     items = os.listdir(folder)
 
@@ -123,7 +124,7 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[], exclude_hidden=False
             is_last_dir = (i == len(dirs) - 1) and (files_only or not files)  # Consider files_only flag
             connector = "\t└─" if is_last_dir else "\t├─"
             print(prefix + connector + " " + os.path.basename(d) + '/*')
-            output.append(prefix + connector + " " + os.path.basename(d) + '/*')
+            output.append(prefix + connector + " " + os.path.basename(d) + '/*'+'\n')
             new_prefix = prefix + ("    " if is_last_dir else "\t|   ")
             file_to_text(os.path.join(folder, os.path.basename(d)), depth + 1, new_prefix, exemptions, exclude_hidden, max_depth, dirs_only, files_only, output)
 
@@ -133,7 +134,7 @@ def file_to_text(folder, depth=0, prefix="", exemptions=[], exclude_hidden=False
             is_last_file = (i == len(files) - 1)
             connector = "\t└─" if is_last_file else "\t├─"
             print(prefix + connector + " " + os.path.basename(f))
-            output.append(prefix + connector + " " + os.path.basename(f))
+            output.append(prefix + connector + " " + os.path.basename(f)+'\n')
 
     print("\n\n") if depth == 0 else ""
     output.append("\n\n") if depth == 0 else ""
@@ -152,8 +153,8 @@ def structure_parser(structure, root):
         if line.endswith("/*"):
             folders.append(line.replace("/*", '').replace("./", '').replace("├─", '').replace("|", '').replace("\t", ''))
         elif "└─" in line:
-            result.append(os.path.join(root, *folders[(1 if os.path.basename(root) == folders[0] else 0):], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
-            folders.pop()
+            result.append(os.path.join(root, *folders[(1 if folders and os.path.basename(root) == folders[0] else 0):], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
+            folders.pop() if folders else ""
         else:
             result.append(os.path.join(root, *folders[(1 if folders and os.path.basename(root) == folders[0] else 0):], line.replace("/*", '').replace("/", '').replace("├─", '').replace("|", '').replace("\t", '').replace("└─", '')))
     return result
@@ -165,9 +166,9 @@ def create_dir(paths):
         dir = os.path.dirname(path)
         if dir and not os.path.exists(dir):
             os.makedirs(dir)
-
-        with open(path, 'w') as f:
-            pass
+        if os.path.isfile:
+            with open(path, 'w') as f:
+                pass
 
 
 def reading_fttignore():
@@ -196,7 +197,7 @@ def main():
 
     parser.add_argument('-f', '--folder', type=str, default='.', help="Path to the root folder to traverse.")
     parser.add_argument('-e', '--exemptions', type=str, nargs='*', help="List of files/folders to exclude. Accepts either a space-separated list or a file path containing exclusions and adds those to any exemptions spcified in a .fttignore file, if there is any.")
-    parser.add_argument('-H', '--hidden', type=str, help="Include hidden files and directories in the output. By default, hidden files (starting with '.') are excluded.")
+    parser.add_argument('-H', '--hidden', action='store_true', help="Include hidden files and directories in the output. By default, hidden files (starting with '.') are excluded.")
 
     parser.add_argument('generate', type=str, nargs='?', help="Specify the template for the directory structure. Can be a path to a text file or a direct string.")
 
@@ -207,7 +208,7 @@ def main():
 
     parser.add_argument('-s', '--save-to-file', type=str, nargs='?', const="ftt.txt", help="Save output to a file. Defaults to 'ftt.txt' if no file is provided.")
 
-    parser.add_argument('-v', '--version', action='version', version=f"ftt v{version}")
+    parser.add_argument('-v', '--version', action='version', version=f"ftt {version}")
 
 
 
@@ -219,8 +220,8 @@ def main():
         output = file_to_text(os.getcwd() if args.folder == '.' else args.folder, exemptions=exemptions_validator(args.exemptions), exclude_hidden=args.hidden if args.hidden else False, max_depth=args.max_depth, dirs_only=args.dirs_only if args.dirs_only else False, files_only=args.files_only if args.files_only else False)
         if args.save_to_file:
             with open('ftt.txt', 'w', encoding='utf-8') as f:
-                f.write(output) 
-            print(f'{args,folder} saved to ftt.txt')
+                f.writelines(output) 
+            print(f'{args.folder} saved to ftt.txt')
     else:
         file_to_text(os.getcwd())
 
