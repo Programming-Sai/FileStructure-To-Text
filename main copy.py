@@ -163,12 +163,17 @@ def structure_parser(structure, root):
 
 def create_dir(paths):
     for path in paths:
+        path=path.replace('|', '')
+        
         dir = os.path.dirname(path)
+
         if dir and not os.path.exists(dir):
             os.makedirs(dir)
-        if os.path.isfile:
-            with open(path, 'w') as f:
-                pass
+            continue
+
+        print("FILE PATH: ", path)
+        with open(path, 'w') as f:
+            pass
 
 
 def reading_fttignore():
@@ -214,7 +219,12 @@ def main():
 
     args = parser.parse_args()
     if args.generate and args.folder and file_to_text_validator(args.folder):
-        create_dir(structure_parser(template_validator(args.generate), args.folder))
+        template=template_validator(args.generate)
+        print(template)
+        paths=structure_parser(template, args.folder)
+        create_dir(paths)
+        # for path in paths:
+            # print(path)
         print(f"{args.folder} has been created successfully")
     elif args.folder and file_to_text_validator(args.folder):
         output = file_to_text(os.getcwd() if args.folder == '.' else args.folder, exemptions=exemptions_validator(args.exemptions), exclude_hidden=args.hidden if args.hidden else False, max_depth=args.max_depth, dirs_only=args.dirs_only if args.dirs_only else False, files_only=args.files_only if args.files_only else False)
