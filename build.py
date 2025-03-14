@@ -2,6 +2,13 @@ import os
 import shutil
 import sys
 import subprocess
+import sys
+
+if sys.platform.startswith("win"):
+    import winreg
+else:
+    winreg = None  # Or handle it differently
+
 
 # Determine OS-specific installation path
 if sys.platform.startswith("win"):
@@ -35,16 +42,14 @@ if not sys.platform.startswith("win"):
     os.chmod(dest_path, 0o755)
 
 # Add to system PATH dynamically
+
 def add_to_path_windows():
-    current_path = os.environ.get(path_var, "")
-    if install_dir not in current_path:
-        print("🔧 Adding FTT to system PATH...")
-        try:
-            subprocess.run(f'setx {path_var} "{current_path};{install_dir}"', shell=True)
-            print("✅ FTT added to PATH. Restart your terminal for changes to take effect.")
-        except Exception as e:
-            print(f"⚠️ Failed to add FTT to PATH automatically: {e}")
-            print(f"➡️ Please add `{install_dir}` to your system PATH manually.")
+    command = f'[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";{install_dir}", "User")'
+
+    subprocess.run(["powershell", "-Command", command], shell=True)
+
+    print("✅ FTT added to PATH. Restart your terminal for changes to take effect.")
+
 
 def add_to_path_linux():
     bashrc_path = os.path.expanduser("~/.bashrc")
