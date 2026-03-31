@@ -276,9 +276,9 @@ def main():
     elif args.folder and file_to_text_validator(args.folder):
         output = file_to_text(os.getcwd() if args.folder == '.' else args.folder, exemptions=exemptions_validator(args.exemptions), exclude_hidden=args.hidden if args.hidden else False, max_depth=args.max_depth, dirs_only=args.dirs_only if args.dirs_only else False, files_only=args.files_only if args.files_only else False)
         if args.save_to_file:
-            with open('ftt.txt', 'w', encoding='utf-8') as f:
+            with open(args.save_to_file or 'ftt.txt', 'w', encoding='utf-8') as f:
                 f.writelines(output) 
-            print(f'{args.folder} saved to ftt.txt')
+            print(f'{args.folder} saved to {args.save_to_file or 'ftt.txt'}')
     else:
         file_to_text(os.getcwd())
 
